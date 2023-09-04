@@ -5,7 +5,6 @@ from maze_generator.src.maze import Maze
 from src.samples.maze.maze_mapper_executor import MazeMapperExecutor
 from src.executor.execution_mode import ExecutionMode
 from maze_generator.src.maze_solver import MazeSolver
-from src.simulator.simulator_controller import SimulatorController
 from src.samples.maze.maze_simulator_controller import MazeSimulatorController
     
 
@@ -57,7 +56,7 @@ class TestSimulatorCreation(unittest.TestCase):
 
     def test_simulator_can_be_used_to_generate_better_execution_strategies(self):
         test_executor = MazeMapperExecutor(self.maze_solver, ExecutionMode.EXPLORATION)
-        simulator = test_executor.execute()
+        test_executor.execute()
 
         test_executor.set_execution_mode(ExecutionMode.PERFORMANCE)
         start_num_actions = test_executor.execute()

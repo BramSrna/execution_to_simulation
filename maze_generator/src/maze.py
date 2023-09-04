@@ -41,9 +41,13 @@ class Maze(object):
         possible_start_end_coordinates = []
         for x in range(self.x_len):
             for y in range(self.y_len):
-                if (x == 0) or (x == self.x_len - 1) or (y == 0) or (y == self.y_len - 1):
-                    if self.is_coordinate_free(x, y - 1) or self.is_coordinate_free(x, y + 1) or self.is_coordinate_free(x - 1, y) or self.is_coordinate_free(x + 1, y):
-                        possible_start_end_coordinates.append((x, y))
+                on_outer_bound = (x == 0) or (x == self.x_len - 1) or (y == 0) or (y == self.y_len - 1)
+                connected_to_free_spot = self.is_coordinate_free(x, y - 1) or \
+                    self.is_coordinate_free(x, y + 1) or \
+                    self.is_coordinate_free(x - 1, y) or \
+                    self.is_coordinate_free(x + 1, y)
+                if on_outer_bound and connected_to_free_spot:
+                    possible_start_end_coordinates.append((x, y))
         assert(len(possible_start_end_coordinates) >= 2)
 
         self.starting_coordinate = random.sample(possible_start_end_coordinates, 1)[0]

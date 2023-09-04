@@ -1,6 +1,21 @@
-# execution_to_simulation
-A proof of concept for generating a simulator using data retrieved during program execution
+- Mixing simulator with synthetic data
+- Simulator with non-static states (i.e. situation where you cannot easily define states)
+- Multi-client simulation (i.e. multiple bots executing in a simulator simulataneously)
+- Continuous simulation / partial state information
+- Can combine compatable simulators or break simulators down into components
 
+
+End goal:
+Simulate everything at once
+- Will need to be able to support an extremely large amount of threads
+- Combine continous simulation, discrete state computation, and ML to combine active simulation alongside JIT computation at read-time
+
+
+Main use case:
+1. User programmatically sets up initial simulation environment. This includes the output information that can be read.
+2. User connects sensor datastream(s) to simulator (Ex. A camera may be used to determine the actual dimensions and appearance of an area)
+3. The sensor data is then used to update the simulation environment as data is collected
+4. Once the simulator is complete, it can be used for ML and other tasks. The simulator can be partially complete for retrieving partial output information.
 
 There are three parts to the project:
 - Execution to simulation
@@ -38,16 +53,3 @@ Sample simulator life cycle:
 - Iterate on simulator and task
 - User monitors optimization using visualizer
 - User provides new synthetic data and manual task manipulations as needed
-
-# Development
-Run the following to initialize the virtual environment and install the needed dependencies:
-```
-py -m venv env
-.\env\Scripts\activate
-py -m pip install -r requirements.txt
-```
-
-When you want to leave the virtual environment, run:
-```
-deactivate
-```
