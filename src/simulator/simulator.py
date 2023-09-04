@@ -1,5 +1,5 @@
 from sklearn.tree import DecisionTreeClassifier
-from tensorflow.keras import models, layers, utils, backend
+from tensorflow.keras import models, layers
 import numpy as np
 from src.simulator.simulator_state import SimulatorState
 
@@ -161,7 +161,14 @@ class Simulator(object):
                     training_targets.append(new_state.get_state_info())
 
         # Train the model
-        self.state_transition_predictor_model.fit(x=np.array(training_data), y=np.array(training_targets), batch_size=32, epochs=100, shuffle=True, validation_split=0.3)
+        self.state_transition_predictor_model.fit(
+            x=np.array(training_data),
+            y=np.array(training_targets),
+            batch_size=32,
+            epochs=100,
+            shuffle=True,
+            validation_split=0.3
+        )
 
     def _get_possible_actions_for_state(self, state_info):
         saved_state = self.state_info_to_state(state_info)

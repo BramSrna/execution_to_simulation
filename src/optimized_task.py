@@ -28,7 +28,6 @@ class OptimizedTask(object):
             self.learn() # robot should learn after every episode
 
     def choose_action(self, curr_state, allowed_moves):
-        max_reward = -10e15
         next_move = None
         if np.random.random() < self.random_factor:
             # if random number below random factor, choose random action

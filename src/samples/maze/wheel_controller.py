@@ -1,6 +1,4 @@
-from maze_generator.src.maze_solver_actions import MazeSolverActions
 from src.observer_pattern.observable import Observable
-from src.executor.execution_mode import ExecutionMode
 
 class WheelController(Observable):
     def __init__(self, controller):

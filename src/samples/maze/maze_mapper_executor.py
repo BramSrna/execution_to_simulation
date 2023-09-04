@@ -1,6 +1,5 @@
 import random
 
-from src.simulator.simulator import Simulator
 from src.samples.maze.visual_sensor import VisualSensor
 from src.samples.maze.wheel_controller import WheelController
 from src.samples.maze.location_sensor import LocationSensor
