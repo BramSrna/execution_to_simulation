@@ -3,11 +3,6 @@ import unittest
 import json
 import os
 
-from maze_generator.src.maze import Maze
-from src.samples.maze.maze_mapper_executor import MazeMapperExecutor
-from src.executor.execution_mode import ExecutionMode
-from maze_generator.src.maze_solver import MazeSolver
-from src.samples.maze.maze_simulator_controller import MazeSimulatorController
 from src.simulator.simulator import Simulator
     
 
