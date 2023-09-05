@@ -1,10 +1,14 @@
+import os
+import json
+
 from sklearn.tree import DecisionTreeClassifier
-from tensorflow.keras import models, layers
+from tensorflow import keras
+from keras import models, layers
 import numpy as np
 from src.simulator.simulator_state import SimulatorState
 
 class Simulator(object):
-    def __init__(self):
+    def __init__(self, additional_config_path = None, additional_config_dict = None):
         self.known_states = []
         self.all_possible_actions = []
         self.previous_predictions = {}
@@ -12,7 +16,28 @@ class Simulator(object):
         self.state_transition_predictor_model = None
         self.end_state = None
 
+        self.config = json.load(
+            open(os.path.join(os.path.dirname(__file__), "./default_simulator_config.json"))
+        )
+        additional_config = {}
+        if additional_config_path is not None:
+            additional_config = json.load(
+                open(os.path.join(os.path.dirname(__file__), additional_config_path))
+            )
+
+        for key, value in additional_config.items():
+            self.config[key] = value
+
+        if additional_config_dict is not None:
+            for key, value in additional_config_dict.items():
+                self.config[key] = value
+
+        self.ready_for_use_threshold_percentage = self.config["ready_for_use_threshold_percentage"]
+
         self._reset_models()
+
+    def export_configuration(self):
+        return self.config
 
     def add_state_info(self, state_key_info, possible_transition_list, is_start_state, is_end_state):
         state = self.state_info_to_state(state_key_info)
@@ -68,7 +93,7 @@ class Simulator(object):
                     unknown_transitions += 1
             total_transitions += 1
         unknown_percentage = float(unknown_transitions) / float(total_transitions)
-        return unknown_percentage == 0
+        return unknown_percentage <= (100 - self.ready_for_use_threshold_percentage / 100.0)
     
     def get_uncomplete_states(self):
         uncomplete_states = []
