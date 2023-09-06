@@ -2,7 +2,6 @@ import os
 import json
 
 from sklearn.tree import DecisionTreeClassifier
-from tensorflow import keras
 from keras import models, layers
 import numpy as np
 from src.simulator.simulator_state import SimulatorState
@@ -93,7 +92,8 @@ class Simulator(object):
                     unknown_transitions += 1
             total_transitions += 1
         unknown_percentage = float(unknown_transitions) / float(total_transitions)
-        return unknown_percentage <= (100 - self.ready_for_use_threshold_percentage / 100.0)
+        target_value = 100 - self.ready_for_use_threshold_percentage
+        return unknown_percentage <= target_value
     
     def get_uncomplete_states(self):
         uncomplete_states = []

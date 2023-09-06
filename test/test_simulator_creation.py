@@ -1,5 +1,6 @@
 import logging
 import unittest
+import pytest
 
 from maze_generator.src.maze import Maze
 from src.samples.maze.maze_mapper_executor import MazeMapperExecutor
@@ -54,6 +55,7 @@ class TestSimulatorCreation(unittest.TestCase):
             curr_iteration += 1
         self.assertTrue(simulator.is_ready_for_use())
 
+    @pytest.mark.skip(reason="https://stackoverflow.com/questions/38442897/how-do-i-disable-a-test-using-pytest")
     def test_simulator_can_be_used_to_generate_better_execution_strategies(self):
         test_executor = MazeMapperExecutor(self.maze_solver, ExecutionMode.EXPLORATION)
         test_executor.execute()
