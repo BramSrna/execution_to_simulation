@@ -48,6 +48,9 @@ class MazeSolver(object):
     def get_starting_coordinate(self):
         return self.maze.get_starting_coordinate()
     
+    def get_maze(self):
+        return self.maze
+    
     def _move_left(self):
         new_x = self.current_coordinate[0] - 1
         new_y = self.current_coordinate[1]

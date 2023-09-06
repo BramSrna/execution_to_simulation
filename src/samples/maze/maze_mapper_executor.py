@@ -24,7 +24,7 @@ class MazeMapperExecutor(Executor):
         
         max_iterations = 10000
         iter_count = 0
-        while (not self.controller.is_complete()) and(iter_count < max_iterations):
+        while (not self.controller.is_complete()) and (iter_count < max_iterations):
             location = self.location_sensor.read()
             possible_directions = self.visual_sensor.read()
             if not (self.controller == self.simulator):
@@ -54,8 +54,8 @@ class MazeMapperExecutor(Executor):
     def optimize_task(self):
         max_iter = 100
         counter = 0
+        self.set_execution_mode(ExecutionMode.EXPLORATION)
         while (not self.simulator.is_ready_for_use()) and (counter < max_iter):
-            self.set_execution_mode(ExecutionMode.EXPLORATION)
             self.execute()
             counter += 1
         if not self.simulator.is_ready_for_use():
