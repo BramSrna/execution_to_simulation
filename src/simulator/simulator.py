@@ -93,7 +93,7 @@ class Simulator(object):
         
         self._reset_models()
 
-    def export_configuration(self):
+    def get_config(self):
         return self.config
 
     def get_start_state(self):

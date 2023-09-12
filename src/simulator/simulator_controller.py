@@ -10,7 +10,6 @@ class SimulatorController(object):
         self.current_state = self.simulator.get_start_state()
 
     def is_complete(self):
-        print(self.current_state, self.simulator.get_end_state())
         return self.current_state == self.simulator.get_end_state()
     
     def get_current_state(self):

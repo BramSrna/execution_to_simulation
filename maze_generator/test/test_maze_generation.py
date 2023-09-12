@@ -10,7 +10,6 @@ class TestMazeGeneration(unittest.TestCase):
             num_rows = 11
             num_cols = 11
             generated_maze = Maze(num_rows, num_cols)
-            print(generated_maze)
             free_spots = []
             for col in range(num_cols):
                 for row in range(num_rows):
