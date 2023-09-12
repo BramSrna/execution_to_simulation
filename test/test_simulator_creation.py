@@ -7,6 +7,7 @@ from src.samples.maze.maze_mapper_executor import MazeMapperExecutor
 from src.executor.execution_mode import ExecutionMode
 from maze_generator.src.maze_solver import MazeSolver
 from src.samples.maze.maze_simulator_controller import MazeSimulatorController
+from maze_generator.src.maze_solver_actions import MazeSolverActions
     
 
 class TestSimulatorCreation(unittest.TestCase):
@@ -30,6 +31,42 @@ class TestSimulatorCreation(unittest.TestCase):
         actual_start_actions = start_state.get_possible_transition_names()
         self.assertEqual(expected_start_actions, actual_start_actions)
 
+    def test_states_mapped_by_simulator_match_actual_states(self):
+        test_executor = MazeMapperExecutor(self.maze_solver, ExecutionMode.PERFORMANCE)
+        test_executor.execute()
+        simulator = test_executor.get_simulator()
+        simulator_controller = MazeSimulatorController(simulator)
+
+        simulator_states = simulator.get_known_states()
+        self.assertGreater(len(simulator_states), 0)
+        for state in simulator_states:
+            simulator_controller.set_state(state)
+            original_location = simulator_controller.get_current_coordinate()
+            possible_actions = simulator_controller.get_possible_actions()
+            if not simulator_controller.is_complete():
+                self.assertGreater(len(possible_actions), 0)
+            else:
+                self.assertEqual(0, len(possible_actions))
+            original_state = state
+            for action in possible_actions:
+                simulator_controller.set_state(original_state)
+                simulator_controller.execute_action(action)
+                new_location = simulator_controller.get_current_coordinate()
+                if action == MazeSolverActions.RIGHT:
+                    self.assertEqual(original_location[0] + 1, new_location[0])
+                    self.assertEqual(original_location[1], new_location[1])
+                elif action == MazeSolverActions.LEFT:
+                    self.assertEqual(original_location[0] - 1, new_location[0])
+                    self.assertEqual(original_location[1], new_location[1])
+                elif action == MazeSolverActions.UP:
+                    self.assertEqual(original_location[0], new_location[0])
+                    self.assertEqual(original_location[1] + 1, new_location[1])
+                elif action == MazeSolverActions.DOWN:
+                    self.assertEqual(original_location[0], new_location[0])
+                    self.assertEqual(original_location[1] - 1, new_location[1])
+                else:
+                    raise Exception("Unknown action: {}".format(action))
+
     def test_simulator_will_arrive_at_final_state_after_executor_runs_using_simulator_as_execution_context(self):
         test_executor = MazeMapperExecutor(self.maze_solver, ExecutionMode.PERFORMANCE)
         test_executor.execute()
@@ -39,6 +76,7 @@ class TestSimulatorCreation(unittest.TestCase):
         test_executor.set_controller(simulator_controller)
         simulator_controller.reset()
         self.assertFalse(simulator_controller.is_complete())
+        simulator.set_accept_new_data(False)
         test_executor.execute()
         self.assertTrue(simulator_controller.is_complete())
 

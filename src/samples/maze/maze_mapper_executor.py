@@ -12,33 +12,25 @@ class MazeMapperExecutor(Executor):
     def __init__(self, initial_execution_controller, execution_mode):
         Executor.__init__(self, initial_execution_controller, execution_mode)
 
-        self.visual_sensor = VisualSensor(self.controller)
-        self.location_sensor = LocationSensor(self.controller)
-        self.wheel_controller = WheelController(self.controller)
+        self.visual_sensor = VisualSensor(self.simulator, self.controller)
+        self.location_sensor = LocationSensor(self.simulator, self.controller)
+        self.wheel_controller = WheelController(self.simulator, self.controller)
 
         self.performance_mode_algorithm = self._default_performance_mode
 
     def execute(self):
-        num_actions = 0
         self.controller.reset()
         
+        num_actions = 0
         max_iterations = 10000
-        iter_count = 0
-        while (not self.controller.is_complete()) and (iter_count < max_iterations):
+        while (not self.controller.is_complete()) and (num_actions < max_iterations):
             location = self.location_sensor.read()
             possible_directions = self.visual_sensor.read()
-            if not (self.controller == self.simulator):
-                self.simulator.add_state_info(location, possible_directions, iter_count == 0, False)
             action = self._decide(location, possible_directions)
             self.wheel_controller.execute_action(action)
             num_actions += 1
-            if not (self.controller == self.simulator):
-                self.simulator.add_transition_info(location, action, self.location_sensor.read())
-            iter_count += 1
         location = self.location_sensor.read()
         possible_directions = self.visual_sensor.read()
-        if not (self.controller == self.simulator):
-            self.simulator.add_state_info(location, possible_directions, iter_count == 0, True)
 
         if not self.controller.is_complete():
             raise Exception("Could not complete the maze in {} iterations".format(max_iterations))
@@ -79,7 +71,7 @@ class MazeMapperExecutor(Executor):
     def _default_performance_mode(self, location, possible_directions):
         # Algorith for "keep your right hand against the wall until you complete the maze"
         action_precedence = [MazeSolverActions.RIGHT, MazeSolverActions.UP, MazeSolverActions.LEFT, MazeSolverActions.DOWN]
-        latest_action = self.wheel_controller.get_latest_action()
+        latest_action = self.wheel_controller.get_previous_action()
         if latest_action == MazeSolverActions.RIGHT:
             action_precedence = [MazeSolverActions.DOWN, MazeSolverActions.RIGHT, MazeSolverActions.UP, MazeSolverActions.LEFT]
         elif latest_action == MazeSolverActions.UP:

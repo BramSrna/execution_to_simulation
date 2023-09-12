@@ -5,6 +5,7 @@ from sklearn.tree import DecisionTreeClassifier
 from keras import models, layers
 import numpy as np
 from src.simulator.simulator_state import SimulatorState
+from src.simulator.data_stream_types import DataStreamTypes
 
 class Simulator(object):
     def __init__(self, additional_config_path = None, additional_config_dict = None):
@@ -13,7 +14,8 @@ class Simulator(object):
         self.previous_predictions = {}
         self.action_predictor_model = None
         self.state_transition_predictor_model = None
-        self.end_state = None
+        self.data_streams = {}
+        self.accept_new_data = True
 
         self.config = json.load(
             open(os.path.join(os.path.dirname(__file__), "./default_simulator_config.json"))
@@ -35,27 +37,64 @@ class Simulator(object):
 
         self._reset_models()
 
+    def set_accept_new_data(self, new_state):
+        self.accept_new_data = new_state
+
+    def open_data_stream(self, data_stream_id, data_stream_type):
+        if data_stream_id not in self.data_streams:
+            self.data_streams[data_stream_id] = {
+                "SENSOR_TYPE": data_stream_type,
+                "DATA_STREAM_READINGS": []
+            }
+
+    def get_data_stream_readings_of_type(self, data_stream_type):
+        target_data_stream_info = None
+        for data_stream_id, curr_data_stream_info in self.data_streams.items():
+            if curr_data_stream_info["SENSOR_TYPE"] == data_stream_type:
+                target_data_stream_info = curr_data_stream_info
+                break
+        if target_data_stream_info is None:
+            return None
+        
+        return target_data_stream_info["DATA_STREAM_READINGS"]
+
+    def notify_new_sensor_value(self, data_stream_id, new_value):
+        if not self.accept_new_data:
+            return False
+        
+        if data_stream_id not in self.data_streams:
+            raise Exception("Received value for unknown data stream: {}".format(data_stream_id))
+        
+        self.data_streams[data_stream_id]["DATA_STREAM_READINGS"].append(new_value)
+
+        state_id_info_data_stream_readings = self.get_data_stream_readings_of_type(DataStreamTypes.STATE_ID)
+        if len(state_id_info_data_stream_readings) < 1:
+            raise Exception("Received non-state ID data stream value before state ID data stream value.")
+        state_to_update = self.state_info_to_state(state_id_info_data_stream_readings[-1])
+
+        data_stream_type = self.data_streams[data_stream_id]["SENSOR_TYPE"]
+        if (data_stream_type == DataStreamTypes.STATE_ID) and (len(state_id_info_data_stream_readings) > 1):      
+            start_state = self.state_info_to_state(state_id_info_data_stream_readings[-2])
+            end_state = state_to_update
+            concrete_transition_data_stream_readings = self.get_data_stream_readings_of_type(DataStreamTypes.CONCRETE_TRANSITIONS)
+            if len(concrete_transition_data_stream_readings) < 1:
+                raise Exception("Went to a new state, but concrete transition data stream did not receive a new reading.")
+            start_state.add_possible_transition_end_state(concrete_transition_data_stream_readings[-1], end_state)
+        elif data_stream_type == DataStreamTypes.POSSIBLE_TRANSITIONS:
+            state_to_update.add_possible_transition_name_list(new_value)
+        
+        if len(self.known_states) == 1:
+            state_to_update.set_is_start_state(True)
+
+        if len(state_to_update.get_possible_transition_names()) == 0:
+            state_to_update.set_is_end_state(True)
+        else:
+            state_to_update.set_is_end_state(False)
+        
+        self._reset_models()
+
     def export_configuration(self):
         return self.config
-
-    def add_state_info(self, state_key_info, possible_transition_list, is_start_state, is_end_state):
-        state = self.state_info_to_state(state_key_info)
-        state.add_possible_transition_name_list(possible_transition_list)
-        if is_start_state:
-            for known_state in self.known_states:
-                known_state.set_is_start_state(False)
-            state.set_is_start_state(True)
-        if is_end_state:
-            for known_state in self.known_states:
-                known_state.set_is_end_state(False)
-            state.set_is_end_state(True)
-        self._reset_models()
-
-    def add_transition_info(self, start_state_key_info, transition_name, end_state_key_info):
-        start_state = self.state_info_to_state(start_state_key_info)
-        end_state = self.state_info_to_state(end_state_key_info)
-        start_state.add_possible_transition_end_state(transition_name, end_state)
-        self._reset_models()
 
     def get_start_state(self):
         for state in self.known_states:
@@ -69,16 +108,11 @@ class Simulator(object):
                 return state
         return None
 
-    def get_state_after_action(self, start_state_key_info, transition_name):
-        start_state = self.state_info_to_state(start_state_key_info)
-        if start_state is None:
-            return None
-        
-        new_state = start_state
+    def get_state_after_action(self, start_state, transition_name):
         transition_tree = start_state.get_transition_tree()
-        if transition_name in transition_tree:
-            new_state = transition_tree[transition_name]
-        return new_state
+        if (transition_name in transition_tree):
+            return transition_tree[transition_name]
+        return None
 
     def is_ready_for_use(self):
         if len(self.known_states) == 0:
@@ -110,11 +144,8 @@ class Simulator(object):
         self.known_states.append(new_state)
         return new_state
 
-    def _get_all_known_states(self):
-        ret_arr = []
-        for state in self.known_states:
-            ret_arr.append(state)
-        return ret_arr
+    def get_known_states(self):
+        return self.known_states
 
     def _construct_state_prediction(self, state_info):
         if str(state_info) in self.previous_predictions:
