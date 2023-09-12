@@ -28,7 +28,6 @@ class TestMazeSolver(unittest.TestCase):
             num_rows = 11
             num_cols = 11
             generated_maze = Maze(num_rows, num_cols)
-            print(generated_maze)
             maze_solver = MazeSolver(generated_maze)
             maze_solver.reset()
             self.assertFalse(maze_solver.is_complete())

@@ -43,4 +43,10 @@ class SimulatorState(object):
         return True
     
     def __str__(self):
-        return str(self.state_key_info)
+        info = {
+            "STATE_KEY_INFO": self.state_key_info,
+            "IS_START_STATE": self.is_start_state,
+            "IS_END_STATE": self.is_end_state,
+            "POSSIBLE_TRANSITION_NAMES": self.get_possible_transition_names()
+        }
+        return str(info)

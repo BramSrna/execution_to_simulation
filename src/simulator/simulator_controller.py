@@ -14,3 +14,6 @@ class SimulatorController(object):
     
     def get_current_state(self):
         return self.current_state
+    
+    def set_state(self, new_state):
+        self.current_state = new_state

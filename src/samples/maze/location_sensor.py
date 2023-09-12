@@ -1,25 +1,19 @@
-from src.observer_pattern.observable import Observable
+from src.simulator.data_stream_types import DataStreamTypes
 
-class LocationSensor(Observable):
-    def __init__(self, maze):
-        Observable.__init__(self)
+class LocationSensor(object):
+    def __init__(self, simulator, maze):
+        self.simulator = simulator
         self.controller = maze
-        
-        self.readings = []
+
+        self.simulator.open_data_stream(self.get_id(), DataStreamTypes.STATE_ID)
 
     def get_id(self):
         return id(self)
 
     def read(self):
         reading = self.controller.get_current_coordinate()
-        self.readings.append(reading)
-        self.notify()
+        self.simulator.notify_new_sensor_value(self.get_id(), reading)
         return reading
-    
-    def get_latest_reading(self):
-        if len(self.readings) > 0:
-            return self.readings[-1]
-        return None
     
     def set_controller(self, new_controller):
         self.controller = new_controller

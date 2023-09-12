@@ -1,24 +1,19 @@
-from src.observer_pattern.observable import Observable
+from src.simulator.data_stream_types import DataStreamTypes
 
-class VisualSensor(Observable):
-    def __init__(self, maze):
-        Observable.__init__(self)
+class VisualSensor(object):
+    def __init__(self, simulator, maze):
+        self.simulator = simulator
         self.controller = maze
-        self.readings = []
+
+        self.simulator.open_data_stream(self.get_id(), DataStreamTypes.POSSIBLE_TRANSITIONS)
 
     def get_id(self):
         return id(self)
 
     def read(self):
         reading = self.controller.get_possible_actions()
-        self.readings.append(reading)
-        self.notify()
+        self.simulator.notify_new_sensor_value(self.get_id(), reading)
         return reading
-    
-    def get_latest_reading(self):
-        if len(self.readings) > 0:
-            return self.readings[-1]
-        return None
     
     def set_controller(self, new_controller):
         self.controller = new_controller
